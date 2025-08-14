@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
+use App\Service\SupabaseService;
 
 class SlideshowController extends Controller
 {
-    private $firebaseUrl = "https://firestore.googleapis.com/v1/projects/project_id/databases/(default)/documents/events";
+    protected $supabase;
+
+    public function __construct(SupabaseService $supabase)
+    {
+        $this->supabase = $supabase;
+    }
 
     public function index()
     {
@@ -23,22 +28,25 @@ class SlideshowController extends Controller
 
     private function fetchActiveImages()
     {
-        $response = Http::get($this->firebaseUrl);
+        $unstruct_events = $this->supabase->getAllEvents();
+        $response = collect($unstruct_events);
 
-        $images = [];
-        if ($response->successful()) {
-            $documents = $response->json('documents') ?? [];
-
-            foreach ($documents as $doc) {
-                $fields = $doc['fields'] ?? [];
-                $start = isset($fields['event_start_date']['stringValue']) ? Carbon::parse($fields['event_start_date']['stringValue']) : null;
-                $end = isset($fields['event_end_date']['stringValue']) ? Carbon::parse($fields['event_end_date']['stringValue']) : null;
-
-                if ($start && $end && Carbon::today()->between($start, $end)) {
-                    $images[] = $fields['image_url']['stringValue'] ?? '';
-                }
+        $images = $response->filter(function ($event) {
+            if (empty($event['event_start_date']) || empty($event['event_end_date'])) {
+                return false;
             }
-        }
+
+            $start = Carbon::parse($event['event_start_date']);
+            $end = Carbon::parse($event['event_end_date']);
+
+            return Carbon::today()->between($start, $end);
+        })
+        ->pluck('event_image')
+        ->filter()
+        ->values()
+        ->all();
+
         return $images;
     }
 }
+
