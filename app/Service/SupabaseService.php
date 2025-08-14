@@ -14,9 +14,9 @@ class SupabaseService
 	public function __construct()
 	{
 		$this->client = new Client();
-		$this->url = "https://xszdnqlritwdtczttnkz.supabase.co";
+		$this->url = "project_url";
 
-		$this->serviceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzemRucWxyaXR3ZHRjenR0bmt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNzE3NjAsImV4cCI6MjA3MDc0Nzc2MH0.H4ALxp5dufYV3Ur3QFhSadNRshIsbPqOLK48WMIpTmY";
+		$this->serviceKey = "service_role_key";
 
 		$this->bucket = "events-images";
 	}
